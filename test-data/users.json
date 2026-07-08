@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Jane Doe",
+    "email": "jane.doe.template@example.com",
+    "password": "Test@1234",
+    "title": "Mrs",
+    "dateOfBirth": { "day": "15", "month": "6", "year": "1995" },
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "company": "Acme QA Corp",
+    "address": {
+      "address1": "221B Baker Street",
+      "address2": "Suite 4",
+      "country": "United States",
+      "state": "California",
+      "city": "Los Angeles",
+      "zipcode": "90001"
+    },
+    "mobileNumber": "9876543210",
+    "newsletter": true,
+    "specialOffers": false
+  },
+  {
+    "name": "John Smith",
+    "email": "john.smith.template@example.com",
+    "password": "Test@5678",
+    "title": "Mr",
+    "dateOfBirth": { "day": "3", "month": "11", "year": "1990" },
+    "firstName": "John",
+    "lastName": "Smith",
+    "company": "",
+    "address": {
+      "address1": "742 Evergreen Terrace",
+      "address2": "",
+      "country": "United States",
+      "state": "Texas",
+      "city": "Austin",
+      "zipcode": "73301"
+    },
+    "mobileNumber": "9998887777",
+    "newsletter": false,
+    "specialOffers": true
+  }
+]

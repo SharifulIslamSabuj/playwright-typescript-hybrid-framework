@@ -1,0 +1,18 @@
+[
+  {
+    "address1": "1600 Amphitheatre Parkway",
+    "address2": "",
+    "country": "United States",
+    "state": "California",
+    "city": "Mountain View",
+    "zipcode": "94043"
+  },
+  {
+    "address1": "10 Downing Street",
+    "address2": "Flat 2",
+    "country": "United States",
+    "state": "New York",
+    "city": "New York",
+    "zipcode": "10001"
+  }
+]

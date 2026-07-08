@@ -1,0 +1,6 @@
+{
+  "searchProduct": { "search_product": "top" },
+  "verifyLoginValid": { "email": "jane.doe.template@example.com", "password": "Test@1234" },
+  "verifyLoginInvalid": { "email": "jane.doe.template@example.com", "password": "wrongpassword" },
+  "verifyLoginMissingEmail": { "password": "Test@1234" }
+}

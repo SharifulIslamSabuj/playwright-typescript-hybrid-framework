@@ -1,0 +1,1 @@
+This is a sample dummy file used for testing the file upload functionality on the Contact Us page of automationexercise.com. No real personal or sensitive data is contained in this file.

@@ -1,0 +1,6 @@
+[
+  { "searchTerm": "Dress", "expectedResultsContain": "Dress" },
+  { "searchTerm": "Tshirt", "expectedResultsContain": "Tshirt" },
+  { "searchTerm": "Jeans", "expectedResultsContain": "Jeans" },
+  { "searchTerm": "NonExistentProductXYZ" }
+]

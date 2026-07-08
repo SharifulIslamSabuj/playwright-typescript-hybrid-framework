@@ -1,0 +1,30 @@
+{
+  "name": "playwright-typescript-hybrid-framework",
+  "version": "1.0.0",
+  "description": "Hybrid Automation Framework using Playwright + TypeScript for automationexercise.com",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "test:ui": "playwright test tests/ui",
+    "test:api": "playwright test tests/api",
+    "test:hybrid": "playwright test tests/hybrid",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:chromium": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "codegen": "playwright codegen https://automationexercise.com"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.0",
+    "dotenv": "^17.4.2",
+    "typescript": "^6.0.3"
+  }
+}
