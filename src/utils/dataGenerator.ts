@@ -1,5 +1,14 @@
-export function generateUniqueEmail(prefix = 'testuser'): string {
-  return `${prefix}.${Date.now()}@example.com`;
+function generateTimestampToken(): string {
+  const now = new Date();
+  const pad = (value: number, length = 2) => String(value).padStart(length, '0');
+  return (
+    `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}` +
+    `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}${pad(now.getMilliseconds(), 3)}`
+  );
+}
+
+export function generateUniqueEmail(scenario: string): string {
+  return `ae_${scenario}_${generateTimestampToken()}@testmail.com`;
 }
 
 export function generateRandomString(length = 8): string {

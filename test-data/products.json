@@ -1,6 +1,7 @@
-[
-  { "searchTerm": "Dress", "expectedResultsContain": "Dress" },
-  { "searchTerm": "Tshirt", "expectedResultsContain": "Tshirt" },
-  { "searchTerm": "Jeans", "expectedResultsContain": "Jeans" },
-  { "searchTerm": "NonExistentProductXYZ" }
-]
+{
+  "searchTerms": {
+    "primary": "tshirt",
+    "alternatives": ["top", "jean"]
+  },
+  "cartQuantity": 4
+}

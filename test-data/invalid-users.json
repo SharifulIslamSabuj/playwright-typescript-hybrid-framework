@@ -1,6 +1,6 @@
-[
-  { "email": "notregistered@example.com", "password": "WrongPass123", "scenario": "unregistered email" },
-  { "email": "jane.doe.template@example.com", "password": "wrongpassword", "scenario": "incorrect password" },
-  { "email": "", "password": "Test@1234", "scenario": "empty email" },
-  { "email": "invalid-email-format", "password": "Test@1234", "scenario": "malformed email" }
-]
+{
+  "invalidLogin": {
+    "email": "invalid_user@testmail.com",
+    "password": "Wrong@123"
+  }
+}

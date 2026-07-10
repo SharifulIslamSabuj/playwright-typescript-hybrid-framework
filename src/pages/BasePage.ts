@@ -9,7 +9,13 @@ export class BasePage {
   }
 
   async navigate(path = '/'): Promise<void> {
-    await this.page.goto(path);
+    // Wait for DOM parsing only, not the full `load` event: this public site's
+    // `load` event is gated on third-party ads/fonts/analytics resources that
+    // measured 12-15s in real traces, consuming most of the test's overall
+    // timeout before any test logic runs. Each page object's own web-first
+    // "page loaded" assertion (called immediately after navigation in every
+    // test) is what actually gates on real, page-specific readiness.
+    await this.page.goto(path, { waitUntil: 'domcontentloaded' });
   }
 
   async getPageTitle(): Promise<string> {

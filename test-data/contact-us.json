@@ -1,9 +1,7 @@
-[
-  {
-    "name": "Alex Tester",
-    "email": "alex.tester@example.com",
-    "subject": "General Inquiry",
-    "message": "This is a test message submitted via automated contact us form testing.",
-    "uploadFilePath": "test-data/files/contact-upload-sample.txt"
-  }
-]
+{
+  "name": "Automation QA User",
+  "email": "contact.qa@testmail.com",
+  "subject": "Automation Test Contact Request",
+  "message": "This is an automated test message submitted by Playwright automation.",
+  "uploadFilePath": "test-data/files/contact-upload-sample.txt"
+}

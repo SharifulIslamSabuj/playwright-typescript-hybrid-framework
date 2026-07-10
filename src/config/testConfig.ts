@@ -4,6 +4,7 @@ export const testConfig = {
     short: 5_000,
     long: 60_000,
     apiRequest: 15_000,
+    assertion: 10_000,
   },
   retries: {
     ci: 2,
