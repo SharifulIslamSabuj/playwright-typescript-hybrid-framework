@@ -1,8 +1,8 @@
 {
-  "orderComment": "Please deliver between 9am and 5pm. This is an automated test order.",
+  "orderComment": "Please deliver during business hours.",
   "card": {
     "cardNumber": "4111111111111111",
-    "cardHolderName": "Jane Doe",
+    "cardHolderName": "Automation User",
     "cvc": "123",
     "expiryMonth": "12",
     "expiryYear": "2030"

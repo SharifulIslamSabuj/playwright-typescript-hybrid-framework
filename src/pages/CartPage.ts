@@ -13,6 +13,7 @@ export class CartPage extends BasePage {
   readonly subscribeButton: Locator;
   readonly subscribeSuccessMessage: Locator;
   readonly subscriptionHeading: Locator;
+  readonly guestCheckoutRegisterLoginLink: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -26,6 +27,7 @@ export class CartPage extends BasePage {
     this.subscribeButton = page.locator('#subscribe');
     this.subscribeSuccessMessage = page.locator('#success-subscribe');
     this.subscriptionHeading = page.getByRole('heading', { name: /subscription/i });
+    this.guestCheckoutRegisterLoginLink = page.locator('.modal-body a[href="/login"]');
   }
 
   async verifyCartPage(): Promise<void> {
@@ -60,6 +62,14 @@ export class CartPage extends BasePage {
 
   async removeProduct(): Promise<void> {
     await this.deleteItemButtons.first().click();
+  }
+
+  async proceedToCheckout(): Promise<void> {
+    await this.click(this.proceedToCheckoutButton);
+  }
+
+  async goToRegisterLoginFromCheckoutPrompt(): Promise<void> {
+    await this.click(this.guestCheckoutRegisterLoginLink);
   }
 
   async verifySubscriptionSectionVisible(): Promise<void> {
