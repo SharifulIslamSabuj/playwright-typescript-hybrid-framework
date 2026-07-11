@@ -3,5 +3,8 @@
     "primary": "tshirt",
     "alternatives": ["top", "jean"]
   },
-  "cartQuantity": 4
+  "cartQuantity": 4,
+  "categories": {
+    "women": { "category": "Women", "subCategory": "Dress" }
+  }
 }

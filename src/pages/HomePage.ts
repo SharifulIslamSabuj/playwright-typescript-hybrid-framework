@@ -13,6 +13,9 @@ export class HomePage extends BasePage {
   readonly subscribeButton: Locator;
   readonly subscribeSuccessMessage: Locator;
   readonly subscriptionHeading: Locator;
+  readonly recommendedItemsHeading: Locator;
+  readonly recommendedItems: Locator;
+  readonly continueShoppingButton: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -26,6 +29,9 @@ export class HomePage extends BasePage {
     this.subscribeButton = page.locator('#subscribe');
     this.subscribeSuccessMessage = page.locator('#success-subscribe');
     this.subscriptionHeading = page.getByRole('heading', { name: /subscription/i });
+    this.recommendedItemsHeading = page.getByRole('heading', { name: /recommended items/i });
+    this.recommendedItems = page.locator('.recommended_items .product-image-wrapper');
+    this.continueShoppingButton = page.locator('button:has-text("Continue Shopping")');
   }
 
   async navigateToHome(): Promise<void> {
@@ -60,5 +66,21 @@ export class HomePage extends BasePage {
     await this.subscribeEmailInput.scrollIntoViewIfNeeded();
     await this.fill(this.subscribeEmailInput, email);
     await this.click(this.subscribeButton);
+  }
+
+  async verifyRecommendedItemsVisible(): Promise<void> {
+    await this.recommendedItemsHeading.scrollIntoViewIfNeeded();
+    await assertVisible(this.recommendedItemsHeading);
+  }
+
+  async addRecommendedItemToCart(): Promise<string> {
+    const firstItem = this.recommendedItems.first();
+    const name = (await firstItem.locator('p').first().textContent())?.trim();
+    if (!name) {
+      throw new Error('Failed to extract recommended product name: locator returned no text content.');
+    }
+    await firstItem.locator('.add-to-cart').first().click();
+    await this.click(this.continueShoppingButton);
+    return name;
   }
 }

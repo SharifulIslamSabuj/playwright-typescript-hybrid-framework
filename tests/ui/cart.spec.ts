@@ -1,5 +1,7 @@
 import { test } from '../../src/fixtures/testFixtures';
 import { readJsonFile } from '../../src/utils/fileUtils';
+import { User } from '../../src/types/user.types';
+import { registerNewAccount, deleteAccountSafely } from '../../src/utils/accountHelpers';
 
 interface ProductTestData {
   searchTerms: { primary: string; alternatives: string[] };
@@ -66,5 +68,60 @@ test.describe('Cart', () => {
 
     await cartPage.removeProduct();
     await cartPage.verifyMultipleProductsInCart(0);
+  });
+
+  test('AE-TC-UI-022 @ui @cart @regression @batch2 Add recommended item to cart', async ({ homePage, cartPage }) => {
+    await homePage.navigateToHome();
+    await homePage.verifyRecommendedItemsVisible();
+
+    const productName = await homePage.addRecommendedItemToCart();
+    await homePage.goToCart();
+
+    await cartPage.verifyCartPage();
+    await cartPage.verifyProductInCart(productName);
+  });
+
+  test('AE-TC-UI-020 @ui @cart @regression @batch2 Search products and verify cart after login', async ({
+    homePage,
+    productsPage,
+    cartPage,
+    signupLoginPage,
+  }) => {
+    await homePage.navigateToHome();
+    await homePage.goToProducts();
+    await productsPage.verifyAllProductsPage();
+    await productsPage.searchProduct(productData.searchTerms.primary);
+    await productsPage.verifySearchedProducts();
+
+    const productName = await productsPage.addFirstSearchedProductToCart();
+    await homePage.goToCart();
+    await cartPage.verifyCartPage();
+    await cartPage.verifyProductInCart(productName);
+
+    let accountCreated = false;
+    let isLoggedIn = false;
+    let user!: User;
+    try {
+      user = await registerNewAccount(homePage, signupLoginPage, 'cartlogin');
+      accountCreated = true;
+      isLoggedIn = true;
+
+      await signupLoginPage.logout();
+      isLoggedIn = false;
+
+      await homePage.goToSignupLogin();
+      await signupLoginPage.verifyLoginSectionVisible();
+      await signupLoginPage.login(user.email, user.password);
+      await signupLoginPage.verifyLoggedInAs(user.name);
+      isLoggedIn = true;
+
+      await homePage.goToCart();
+      await cartPage.verifyCartPage();
+      await cartPage.verifyProductInCart(productName);
+    } finally {
+      if (accountCreated) {
+        await deleteAccountSafely(homePage, signupLoginPage, user, isLoggedIn);
+      }
+    }
   });
 });

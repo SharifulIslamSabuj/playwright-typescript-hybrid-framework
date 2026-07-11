@@ -1,51 +1,9 @@
 import { test } from '../../src/fixtures/testFixtures';
 import { readJsonFile } from '../../src/utils/fileUtils';
-import { generateUniqueEmail } from '../../src/utils/dataGenerator';
-import { logger } from '../../src/utils/logger';
 import { User, LoginCredentials } from '../../src/types/user.types';
-import { HomePage } from '../../src/pages/HomePage';
-import { SignupLoginPage } from '../../src/pages/SignupLoginPage';
+import { registerNewAccount, deleteAccountSafely } from '../../src/utils/accountHelpers';
 
-const userTemplate = readJsonFile<{ dynamicUser: User }>('test-data/users.json').dynamicUser;
 const invalidLogin = readJsonFile<{ invalidLogin: LoginCredentials }>('test-data/invalid-users.json').invalidLogin;
-
-async function registerNewAccount(
-  homePage: HomePage,
-  signupLoginPage: SignupLoginPage,
-  scenario: string
-): Promise<User> {
-  const user: User = { ...userTemplate, email: generateUniqueEmail(scenario) };
-
-  await homePage.navigateToHome();
-  await homePage.verifyHomePageVisible();
-  await homePage.goToSignupLogin();
-  await signupLoginPage.verifySignupSectionVisible();
-  await signupLoginPage.startSignup(user.name, user.email);
-  await signupLoginPage.completeAccountRegistration(user);
-  await signupLoginPage.verifyAccountCreated();
-  await signupLoginPage.clickContinue();
-
-  return user;
-}
-
-async function deleteAccountSafely(
-  homePage: HomePage,
-  signupLoginPage: SignupLoginPage,
-  user: User,
-  alreadyLoggedIn: boolean
-): Promise<void> {
-  try {
-    if (!alreadyLoggedIn) {
-      await homePage.navigateToHome();
-      await homePage.goToSignupLogin();
-      await signupLoginPage.login(user.email, user.password);
-    }
-    await signupLoginPage.deleteAccount();
-    await signupLoginPage.verifyAccountDeleted();
-  } catch (error) {
-    logger.warn(`Cleanup failed for ${user.email}: ${(error as Error).message}`);
-  }
-}
 
 test.describe('Signup / Login', () => {
   test('AE-TC-UI-001 @ui @signup @smoke @e2e Register new user', async ({ homePage, signupLoginPage }) => {

@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
-import { assertVisible } from '../utils/assertionUtils';
+import { assertVisible, assertTextContains } from '../utils/assertionUtils';
 
 export class ProductDetailsPage extends BasePage {
   readonly productName: Locator;
@@ -15,6 +15,8 @@ export class ProductDetailsPage extends BasePage {
   readonly conditionText: Locator;
   readonly brandText: Locator;
   readonly continueShoppingButton: Locator;
+  readonly writeYourReviewTab: Locator;
+  readonly reviewSuccessMessage: Locator;
 
   constructor(page: Page) {
     super(page);
@@ -30,6 +32,8 @@ export class ProductDetailsPage extends BasePage {
     this.conditionText = page.locator('p:has-text("Condition:")');
     this.brandText = page.locator('p:has-text("Brand:")');
     this.continueShoppingButton = page.locator('button:has-text("Continue Shopping")');
+    this.writeYourReviewTab = page.locator('a[href="#reviews"]');
+    this.reviewSuccessMessage = page.locator('#review-form .alert-success');
   }
 
   async verifyProductDetailsVisible(): Promise<void> {
@@ -47,5 +51,21 @@ export class ProductDetailsPage extends BasePage {
   async addToCart(): Promise<void> {
     await this.click(this.addToCartButton);
     await this.click(this.continueShoppingButton);
+  }
+
+  async verifyWriteYourReviewVisible(): Promise<void> {
+    await assertVisible(this.writeYourReviewTab);
+  }
+
+  async submitReview(name: string, email: string, review: string): Promise<void> {
+    await this.fill(this.writeReviewNameInput, name);
+    await this.fill(this.writeReviewEmailInput, email);
+    await this.fill(this.writeReviewTextArea, review);
+    await this.click(this.submitReviewButton);
+  }
+
+  async verifyReviewSuccessMessage(): Promise<void> {
+    await assertVisible(this.reviewSuccessMessage);
+    await assertTextContains(this.reviewSuccessMessage, 'Thank you for your review.');
   }
 }
