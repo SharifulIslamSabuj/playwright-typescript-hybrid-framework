@@ -9,4 +9,12 @@ export class ProductsApiClient extends BaseApiClient {
   async searchProduct(searchTerm: string) {
     return this.post(apiEndpoints.searchProduct, { search_product: searchTerm });
   }
+
+  async postProductsList() {
+    return this.post(apiEndpoints.productsList);
+  }
+
+  async searchProductWithoutParam() {
+    return this.post(apiEndpoints.searchProduct);
+  }
 }
