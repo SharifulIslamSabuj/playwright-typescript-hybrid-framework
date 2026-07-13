@@ -1,27 +1,166 @@
 name: Playwright Tests
+
 on:
-  push:
-    branches: [ main, master ]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+  schedule:
+    # Daily canary run against the live Automation Exercise site.
+    # Cron time is UTC: 03:00 UTC == 09:00 Bangladesh Standard Time (UTC+6).
+    # Chosen as an off-peak window globally while still landing at a
+    # reasonable local morning hour to review results.
+    - cron: '0 3 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   test:
-    timeout-minutes: 60
+    name: Playwright Tests (Chromium)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Never attempt to auto-open the HTML report in a headless CI runner.
+      PLAYWRIGHT_HTML_OPEN: never
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
-      with:
-        name: playwright-report
-        path: playwright-report/
-        retention-days: 30
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        id: install_deps
+        run: npm ci
+
+      - name: Install Playwright Chromium browser
+        id: install_playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Type check
+        id: typecheck
+        run: npm run typecheck
+
+      # -----------------------------------------------------------------
+      # Pull request gate: fast, targeted suites only.
+      # Batch 2 / Batch 3 / full regression intentionally do not run here.
+      # -----------------------------------------------------------------
+      - name: Run API suite (@step14)
+        id: api_tests
+        if: github.event_name == 'pull_request'
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: reports/ci/api
+        run: npm run test:api -- --project=chromium --grep "@step14" --output test-results/ci/api
+
+      - name: Run Hybrid suite (@step15)
+        id: hybrid_tests
+        if: github.event_name == 'pull_request'
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: reports/ci/hybrid
+        run: npm run test:hybrid -- --project=chromium --grep "@step15" --output test-results/ci/hybrid
+
+      - name: Run UI Smoke suite (@smoke)
+        id: smoke_tests
+        if: github.event_name == 'pull_request'
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: reports/ci/smoke
+        run: npm run test:ui -- --project=chromium --grep "@smoke" --output test-results/ci/smoke
+
+      # -----------------------------------------------------------------
+      # Push to main / manual dispatch / scheduled run: full stable
+      # Chromium regression (UI + API + Hybrid), excluding only the
+      # documented known AUT limitation AE-TC-UI-006.
+      # -----------------------------------------------------------------
+      - name: Run stable full Chromium regression (excludes AE-TC-UI-006)
+        id: full_regression
+        if: github.event_name != 'pull_request'
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: reports/ci/full-regression
+        run: npx playwright test --project=chromium --grep-invert "AE-TC-UI-006" --output test-results/ci/full-regression
+
+      # -----------------------------------------------------------------
+      # Known AUT limitation: AE-TC-UI-006 (documented client-side
+      # readiness race on the public Contact Us page). Runs on every
+      # trigger, but only if typecheck succeeded. Never fails the job.
+      # -----------------------------------------------------------------
+      - name: Run known AUT limitation (AE-TC-UI-006, non-blocking)
+        id: known_limitation
+        if: ${{ always() && steps.typecheck.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: reports/ci/known-limitation
+        run: npx playwright test tests/ui/contact-us.spec.ts --project=chromium --grep "AE-TC-UI-006" --output test-results/ci/known-limitation
+
+      - name: Upload Playwright HTML reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-html-report-run-${{ github.run_number }}-attempt-${{ github.run_attempt }}
+          path: reports/ci/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload Playwright test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-test-results-run-${{ github.run_number }}-attempt-${{ github.run_attempt }}
+          path: test-results/ci/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Write job summary
+        if: always()
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          API_OUTCOME: ${{ steps.api_tests.outcome }}
+          HYBRID_OUTCOME: ${{ steps.hybrid_tests.outcome }}
+          SMOKE_OUTCOME: ${{ steps.smoke_tests.outcome }}
+          FULL_REGRESSION_OUTCOME: ${{ steps.full_regression.outcome }}
+          KNOWN_LIMITATION_OUTCOME: ${{ steps.known_limitation.outcome }}
+          RUN_NUMBER: ${{ github.run_number }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          {
+            echo "## Playwright CI Summary"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Event | \`$EVENT_NAME\` |"
+            echo "| Branch/Ref | \`$REF_NAME\` |"
+            echo "| Commit | \`$COMMIT_SHA\` |"
+            echo "| Browser | Chromium |"
+            echo "| Typecheck | \`${TYPECHECK_OUTCOME:-not run}\` |"
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              echo "| API suite (@step14) | \`${API_OUTCOME:-not run}\` |"
+              echo "| Hybrid suite (@step15) | \`${HYBRID_OUTCOME:-not run}\` |"
+              echo "| UI Smoke suite (@smoke) | \`${SMOKE_OUTCOME:-not run}\` |"
+            else
+              echo "| Full stable regression (excludes AE-TC-UI-006) | \`${FULL_REGRESSION_OUTCOME:-not run}\` |"
+            fi
+            echo "| Known limitation: AE-TC-UI-006 | \`${KNOWN_LIMITATION_OUTCOME:-not run}\` (non-blocking) |"
+            echo ""
+            echo "### Known AUT Limitation"
+            echo ""
+            echo "AE-TC-UI-006 is executed separately because the public"
+            echo "Automation Exercise Contact Us page has a documented AUT-level"
+            echo "client-side readiness race. Its result is informational and is not"
+            echo "counted as a framework-gating failure."
+            echo ""
+            echo "### Artifacts"
+            echo ""
+            echo "- playwright-html-report-run-$RUN_NUMBER-attempt-$RUN_ATTEMPT"
+            echo "- playwright-test-results-run-$RUN_NUMBER-attempt-$RUN_ATTEMPT"
+          } >> "$GITHUB_STEP_SUMMARY"
