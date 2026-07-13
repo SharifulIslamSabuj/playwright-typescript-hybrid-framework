@@ -1,0 +1,54 @@
+# Reinstalled fresh via `npm ci` inside the image. A host-installed node_modules
+# can contain OS-native binaries (Windows/Mac) that are invalid inside the Linux
+# image, and would otherwise just be redundant, large build-context bytes.
+node_modules/
+
+# Version control history and hooks. Not needed to run tests; unnecessarily
+# bloats the build context sent to the Docker daemon.
+.git/
+.gitattributes
+
+# CI workflow definition. Irrelevant to the image itself and never executed
+# from inside a container.
+.github/
+
+# Source-of-truth project documentation (.docx files). Not needed to run
+# tests; kept out to avoid shipping unrelated binary files into the image.
+docs/
+
+# Generated test OUTPUT, not test input. These are produced by running the
+# suite and are volume-mounted back out to the host (see docker run
+# recommendation in the implementation report) — they must never be baked
+# into the image as if they were source.
+reports/
+test-results/
+playwright-report/
+
+# Secrets/environment overrides. Must never be baked into an image layer.
+# .env.example is intentionally NOT listed here — it holds no secret, only
+# the public BASE_URL default, and the app already has a hardcoded fallback
+# for it regardless.
+.env
+.env.local
+.env.*.local
+
+# Claude Code's own project-local session/settings directory. Not part of
+# the application; irrelevant to and must never ship inside a build artifact.
+.claude/
+
+# Editor/IDE configuration. Irrelevant to running tests inside the container.
+.vscode/
+.idea/
+
+# Log output and OS cruft. Transient, never needed as build input.
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Temporary files. Never needed as build input.
+*.tmp
+*.temp
