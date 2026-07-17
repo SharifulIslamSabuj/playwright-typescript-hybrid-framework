@@ -6,9 +6,9 @@
   "scripts": {
     "test": "playwright test",
     "typecheck": "tsc --noEmit",
-    "test:ui": "playwright test tests/ui",
-    "test:api": "playwright test tests/api",
-    "test:hybrid": "playwright test tests/hybrid",
+    "test:ui": "playwright test tests/ui --project=chromium --workers=1",
+    "test:api": "playwright test tests/api --project=chromium --workers=1",
+    "test:hybrid": "playwright test tests/hybrid --project=chromium --workers=1",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
